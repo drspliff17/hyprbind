@@ -1,22 +1,33 @@
 package main
 
-import "core:fmt"
-
-Bind :: struct {
-	submap:  string,
-	desc:    string,
-	key:     string,
-  arg:     string,
-	flags:   u16,
-	modmask: u16,
+Bind_Json :: struct {
+	locked:           bool,
+	mouse:            bool,
+	release:          bool,
+	repeat:           bool,
+	longPress:        bool,
+	non_consuming:    bool,
+	auto_consuming:   bool,
+	has_description:  bool,
+	modmask:          int,
+	submap:           string,
+	submap_universal: string,
+	key:              string,
+	keycode:          int,
+	catch_all:        bool,
+	description:      string,
+	dispatcher:       string,
+	arg:              string,
 }
 
-Bind_Create :: proc() -> ^Bind {
-	b, err := new(Bind)
-	if err != nil do fmt.panicf("Failed to allocate [Bind]: %v", err)
-	return b
-}
-
-Bind_Delete :: proc(b: ^Bind) {
-	free(b)
+Bind_Free :: proc(bl: [dynamic]Bind_Json) {
+	for b in bl {
+		delete_string(b.submap)
+		delete_string(b.submap_universal)
+		delete_string(b.key)
+		delete_string(b.description)
+		delete_string(b.dispatcher)
+		delete_string(b.arg)
+	}
+	delete(bl)
 }
