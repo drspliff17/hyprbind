@@ -163,22 +163,23 @@ main :: proc() {
 			pd := Construct_ProcDesc_From_Menu_Runner(config.submap_menu_runner)
 			defer Menu_Runner_ProcDesc_Free(pd)
 
-			selectedSubmap := Menu_Submap(&config, submap_types)
-			defer delete_string(selectedSubmap)
+			loop := true
+			for loop {
+				selectedSubmap := Menu_Submap(&config, submap_types)
+				defer delete_string(selectedSubmap)
 
-			if len(selectedSubmap) == 0 {
-				fmt.eprintln("[Error] Submap selection required")
-				os.exit(1)
+				if len(selectedSubmap) == 0 {
+					loop = false
+				}
+
+				selectedKeybind := Menu_Keybind(&config, binds, selectedSubmap)
+				defer delete_string(selectedKeybind)
+
+				if len(selectedKeybind) > 0 {
+					fmt.printf(selectedKeybind)
+					loop = false
+				}
 			}
-
-			selectedKeybind := Menu_Keybind(&config, binds, selectedSubmap)
-			defer delete_string(selectedKeybind)
-
-			if len(selectedSubmap) == 0 {
-				os.exit(0)
-			}
-
-			fmt.printf(selectedKeybind)
 
 		case .ALL_BINDS:
 			pd := Construct_ProcDesc_From_Menu_Runner(config.allkey_menu_runner)
