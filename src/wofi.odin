@@ -22,6 +22,7 @@ Wofi_Menu_Submap :: proc(submap_types: [dynamic]string) -> string {
 	wofi_smap_linecount := fmt.aprintf("%d", ((len(submap_types) + 3 - 1) / 3))
 	defer delete_string(wofi_smap_linecount)
 
+
 	cmd := strings.join(
 		{
 			"printf '%s' '",
@@ -47,7 +48,7 @@ Wofi_Menu_Submap :: proc(submap_types: [dynamic]string) -> string {
 	return strings.clone(sel_submap, context.allocator)
 }
 
-Wofi_Menu_Keybind :: proc(binds: [dynamic]Bind_Json, sel_submap: string) {
+Wofi_Menu_Keybind :: proc(binds: [dynamic]Bind_Json, sel_submap: string) -> (key_sig: string) {
 
 	selected_submap_binds := Bind_Get_Map_Binds(binds, sel_submap)
 	defer delete(selected_submap_binds)
@@ -59,7 +60,11 @@ Wofi_Menu_Keybind :: proc(binds: [dynamic]Bind_Json, sel_submap: string) {
 		if i > 0 {
 			strings.write_string(&builder, "\n")
 		}
-		str := fmt.aprintf("Modmask: %d - Key: %s - %s", b.modmask, b.key, b.description)
+
+		modmaskString := Bind_Modmask_To_String(b.modmask)
+		defer delete_string(modmaskString)
+
+		str := fmt.aprintf("Modmask: %s - Key: %s - %s", modmaskString, b.key, b.description)
 		strings.write_string(&builder, str)
 		delete_string(str)
 	}
@@ -79,5 +84,5 @@ Wofi_Menu_Keybind :: proc(binds: [dynamic]Bind_Json, sel_submap: string) {
 	_, sel_keybind_bytes, sel_keybind_err, _ := os.process_exec(procDesc, context.allocator)
 	defer delete_slice(sel_keybind_bytes)
 	defer delete_slice(sel_keybind_err)
-
+	return strings.clone(string(sel_keybind_bytes), context.allocator)
 }

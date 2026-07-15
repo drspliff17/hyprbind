@@ -56,7 +56,16 @@ main :: proc() {
 	cfile := CFile(Config) {
 		filepath = cfgPath,
 		target = &config,
-		default = {menu_runner = Menu_Runner{program = "wofi", arguments = {"-d"}}},
+		default = {
+			submap_menu_runner = Menu_Runner {
+				program = "wofi",
+				arguments = {"-d", "-E", "-W", "40%", "-p Submap", "--column 3", "--line 6"},
+			},
+			keybind_menu_runner = Menu_Runner {
+				program = "wofi",
+				arguments = {"-d", "-E", "-W", "60%", "-H", "60%", "-p Keybinds"},
+			},
+		},
 	}
 	defer Config_Free(&config)
 
@@ -106,7 +115,7 @@ main :: proc() {
 			}
 			switch (args[1]) {
 			case "-w", "--wofi", "wofi":
-				state.mode = .WOFI
+				state.mode = .MENU
 
 			case:
 				fmt.eprintfln("[Error] Invalid value given: %s", args[1])
@@ -126,14 +135,29 @@ main :: proc() {
 	switch (state.mode) {
 	case .CLI:
 
-	case .WOFI:
-		// Wofi Menu - Submap
-		sel_submap := Wofi_Menu_Submap(submap_types)
-		fmt.println(sel_submap)
-		defer delete_string(sel_submap)
+	case .MENU:
+		//TEST:
+		// targ := Construct_ProcDesc_From_Menu_Runner(config.menu_runner)
+		// defer Menu_Runner_ProcDesc_Free(targ)
 
-		// Wofi Menu - Keybinds
-		Wofi_Menu_Keybind(binds, sel_submap)
+		state.selectedSubmap = Menu_Submap(&config, submap_types)
+		defer delete_string(state.selectedSubmap)
+
+		state.selectedKeybind = Menu_Keybind(&config, binds, state.selectedSubmap)
+		defer delete_string(state.selectedKeybind)
+
+		fmt.println(state.selectedKeybind)
+
+	// Wofi Menu - Submap
+
+	// state.selectedSubmap = Wofi_Menu_Submap(submap_types)
+	// fmt.println(state.selectedSubmap)
+	// defer delete_string(state.selectedSubmap)
+
+	// Wofi Menu - Keybinds
+	// state.selectedKeybind = Wofi_Menu_Keybind(binds, state.selectedSubmap)
+	// fmt.println(state.selectedKeybind)
+	// defer delete_string(state.selectedKeybind)
 
 	}
 

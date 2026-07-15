@@ -1,10 +1,20 @@
 package main
 
+// Mode for program's main execution
 metaMode :: enum {
 	CLI,
-	WOFI,
+	MENU,
+}
+
+// Built-in Modes for Menu content
+menuMode :: enum {
+	SUBMAPS,
+	BINDS,
 }
 
 State :: struct {
-	mode: metaMode,
+	mode:            metaMode,
+	menuMode:        menuMode,
+	selectedSubmap:  string,
+	selectedKeybind: string,
 }
