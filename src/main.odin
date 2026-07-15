@@ -155,9 +155,10 @@ main :: proc() {
 
 			selectedSubmap := Menu_Submap(&config, submap_types)
 			defer delete_string(selectedSubmap)
-			fmt.println(selectedSubmap)
 
-		//TODO: Add a 'stat' functionality here
+			if len(selectedSubmap) == 0 do break
+		// Stat_Submap(binds, submap_types, selectedSubmap)
+		// Stat_All(binds, submap_types)
 
 		case .BINDS:
 			pd := Construct_ProcDesc_From_Menu_Runner(config.submap_menu_runner)
@@ -169,7 +170,7 @@ main :: proc() {
 				defer delete_string(selectedSubmap)
 
 				if len(selectedSubmap) == 0 {
-					loop = false
+					break
 				}
 
 				selectedKeybind := Menu_Keybind(&config, binds, selectedSubmap)
