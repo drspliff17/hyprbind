@@ -4,7 +4,9 @@ import "core:encoding/json"
 import "core:fmt"
 import "core:os"
 
-Config :: struct {}
+Config :: struct {
+	menu_runner: Menu_Runner,
+}
 
 CFile :: struct(T: typeid) {
 	filepath: string,
@@ -25,6 +27,7 @@ Create_Config :: proc(c: ^CFile($T)) -> bool {
 	}
 
 	json_text, err := json.marshal(c.default, allocator = context.allocator)
+	defer delete(json_text)
 
 	if err != nil {
 		panic("Failed to marshal default config")
@@ -50,8 +53,8 @@ Load_Config :: proc(c: ^CFile($T)) -> bool {
 	}
 
 	ok := json.unmarshal(data, c.target) == nil
-	if ok {
-		fmt.println("Loaded Config")
-	}
+	// if ok {
+	// 	fmt.println("Loaded Config")
+	// }
 	return ok
 }

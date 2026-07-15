@@ -9,6 +9,10 @@ import "core:strings"
 
 main :: proc() {
 
+	state := State {
+		mode = .CLI,
+	}
+
 	//TEST:
 	track: mem.Tracking_Allocator
 	mem.tracking_allocator_init(&track, context.allocator)
@@ -51,13 +55,13 @@ main :: proc() {
 
 	cfile := CFile(Config) {
 		filepath = cfgPath,
-		target   = &config,
-		default  = {},
+		target = &config,
+		default = {menu_runner = Menu_Runner{program = "wofi", arguments = {"-d"}}},
 	}
+	defer Config_Free(&config)
 
 	Create_Config(&cfile)
 	Load_Config(&cfile)
-
 
 	// Gather Binds
 	procDesc, hyprctlErr := new(os.Process_Desc)
@@ -94,20 +98,44 @@ main :: proc() {
 	// Parse Args
 	args := os.args[1:]
 	for len(args) > 0 {
-		switch (args) {
+		switch (args[0]) {
+		case "-m", "--mode", "mode":
+			if len(args) < 2 {
+				fmt.eprintln("[Error] Expected value to set Mode")
+				os.exit(1)
+			}
+			switch (args[1]) {
+			case "-w", "--wofi", "wofi":
+				state.mode = .WOFI
+
+			case:
+				fmt.eprintfln("[Error] Invalid value given: %s", args[1])
+				os.exit(1)
+			}
+
+			args = args[2:]
+
 		case:
 			str := strings.starts_with(args[0], "-") ? "argument" : "value"
-			fmt.eprintfln("Invalid %s: %s", str, args[0])
+			fmt.eprintfln("[Error] Invalid %s: %s", str, args[0])
 			args = args[1:]
 		}
 	}
 
-	// Wofi Menu - Submap
-	sel_submap := Wofi_Menu_Submap(submap_types)
-	fmt.println(sel_submap)
-	defer delete_string(sel_submap)
 
-	// Wofi Menu - Keybinds
-	Wofi_Menu_Keybind(binds, sel_submap)
+	switch (state.mode) {
+	case .CLI:
+
+	case .WOFI:
+		// Wofi Menu - Submap
+		sel_submap := Wofi_Menu_Submap(submap_types)
+		fmt.println(sel_submap)
+		defer delete_string(sel_submap)
+
+		// Wofi Menu - Keybinds
+		Wofi_Menu_Keybind(binds, sel_submap)
+
+	}
+
 
 }
