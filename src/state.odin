@@ -10,6 +10,7 @@ metaMode :: enum {
 menuMode :: enum {
 	SUBMAPS,
 	BINDS,
+	ALL_BINDS,
 }
 
 State :: struct {

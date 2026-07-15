@@ -83,6 +83,7 @@ Bind_Modmask_To_String :: proc(mask: int, allocator := context.allocator) -> str
 	parts := make([dynamic]string, allocator)
 	defer delete(parts)
 
+	if mask == 0 do append(&parts, "NONE")
 	if mask & 1 != 0 {append(&parts, "SHIFT")}
 	if mask & 2 != 0 {append(&parts, "CAPS")}
 	if mask & 4 != 0 {append(&parts, "CTRL")}

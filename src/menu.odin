@@ -62,8 +62,8 @@ Menu_Runner_ProcDesc_Free :: proc(pd: ^os.Process_Desc) {
 // Free all Menu_Runners
 Config_Free :: proc(c: ^Config) {
 	Menu_Runner_Free(&c.submap_menu_runner)
-	Menu_Runner_Free(&c.keybind_menu_runner)
-	Menu_Runner_Free(&c.custom_menu_runner)
+	Menu_Runner_Free(&c.subkey_menu_runner)
+	Menu_Runner_Free(&c.allkey_menu_runner)
 }
 
 // Run config.submap_menu_runner
@@ -96,8 +96,7 @@ Menu_Submap :: proc(config: ^Config, submap_types: [dynamic]string) -> string {
 	defer delete_slice(sel_submap_bytes)
 
 	if len(sel_submap_bytes) == 0 {
-		delete_slice(sel_submap_bytes)
-		os.exit(0)
+		return ""
 	}
 
 	str := string(sel_submap_bytes)
@@ -105,7 +104,7 @@ Menu_Submap :: proc(config: ^Config, submap_types: [dynamic]string) -> string {
 	return sel_submap
 }
 
-// Run config.keybind_menu_runner
+// Run config.subkey_menu_runner
 Menu_Keybind :: proc(
 	config: ^Config,
 	binds: [dynamic]Bind_Json,
@@ -138,10 +137,57 @@ Menu_Keybind :: proc(
 
 	procDesc: os.Process_Desc
 
-	menuDesc := Construct_ProcDesc_From_Menu_Runner(config.keybind_menu_runner)
+	menuDesc := Construct_ProcDesc_From_Menu_Runner(config.subkey_menu_runner)
 	defer Menu_Runner_ProcDesc_Free(menuDesc)
 
-	menuArgs := Menu_Runner_To_String(config.keybind_menu_runner)
+	menuArgs := Menu_Runner_To_String(config.subkey_menu_runner)
+	defer delete_string(menuArgs)
+
+	cmd := strings.join({"printf '%s' '", submap_binds, "' | ", menuArgs}, "")
+	defer delete_string(cmd)
+
+	procDesc.command = []string{"sh", "-c", cmd}
+	_, sel_keybind_bytes, sel_keybind_err, _ := os.process_exec(procDesc, context.allocator)
+	defer delete_slice(sel_keybind_bytes)
+	defer delete_slice(sel_keybind_err)
+	return strings.clone(string(sel_keybind_bytes), context.allocator)
+}
+
+// Run config.subkey_menu_runner
+Menu_AllKey :: proc(config: ^Config, binds: [dynamic]Bind_Json) -> (key_sig: string) {
+
+	builder: strings.Builder
+	strings.builder_init(&builder)
+
+	for b, i in binds {
+		if i > 0 {
+			strings.write_string(&builder, "\n")
+		}
+
+		modmaskString := Bind_Modmask_To_String(b.modmask)
+		defer delete_string(modmaskString)
+
+		sm := b.submap == "" ? "default" : b.submap
+		str := fmt.aprintf(
+			"[Submap: %s]  Modmask: %s  -  Key: %s  -  %s",
+			sm,
+			modmaskString,
+			b.key,
+			b.description,
+		)
+		strings.write_string(&builder, str)
+		delete_string(str)
+	}
+
+	submap_binds := strings.to_string(builder)
+	defer delete_string(submap_binds)
+
+	procDesc: os.Process_Desc
+
+	menuDesc := Construct_ProcDesc_From_Menu_Runner(config.subkey_menu_runner)
+	defer Menu_Runner_ProcDesc_Free(menuDesc)
+
+	menuArgs := Menu_Runner_To_String(config.allkey_menu_runner)
 	defer delete_string(menuArgs)
 
 	cmd := strings.join({"printf '%s' '", submap_binds, "' | ", menuArgs}, "")

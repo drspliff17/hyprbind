@@ -5,9 +5,9 @@ import "core:fmt"
 import "core:os"
 
 Config :: struct {
-	submap_menu_runner:  Menu_Runner,
-	keybind_menu_runner: Menu_Runner,
-	custom_menu_runner:  Menu_Runner,
+	submap_menu_runner: Menu_Runner,
+	subkey_menu_runner: Menu_Runner,
+	allkey_menu_runner: Menu_Runner,
 }
 
 CFile :: struct(T: typeid) {

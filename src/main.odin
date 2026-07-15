@@ -10,7 +10,8 @@ import "core:strings"
 main :: proc() {
 
 	state := State {
-		mode = .CLI,
+		mode     = .CLI,
+		menuMode = .SUBMAPS,
 	}
 
 	//TEST:
@@ -59,11 +60,15 @@ main :: proc() {
 		default = {
 			submap_menu_runner = Menu_Runner {
 				program = "wofi",
-				arguments = {"-d", "-E", "-W", "40%", "-p Submap", "--column 3", "--line 6"},
+				arguments = {"-d", "-E", "-W 40%", "-p Submap", "--column 3", "--line 6"},
 			},
-			keybind_menu_runner = Menu_Runner {
+			subkey_menu_runner = Menu_Runner {
 				program = "wofi",
-				arguments = {"-d", "-E", "-W", "60%", "-H", "60%", "-p Keybinds"},
+				arguments = {"-d", "-E", "-W 60%", "-H 60%", "-p Keybinds"},
+			},
+			allkey_menu_runner = Menu_Runner {
+				program = "wofi",
+				arguments = {"-d", "-E", "-W 60%", "-H 60%", "-p All Keybinds"},
 			},
 		},
 	}
@@ -114,14 +119,21 @@ main :: proc() {
 				os.exit(1)
 			}
 			switch (args[1]) {
-			case "-w", "--wofi", "wofi":
-				state.mode = .MENU
+			case "-s", "--submap", "submap":
+				state.menuMode = .SUBMAPS
+
+			case "-sk", "--subkey", "subkey":
+				state.menuMode = .BINDS
+
+			case "-k", "--key", "key":
+				state.menuMode = .ALL_BINDS
 
 			case:
 				fmt.eprintfln("[Error] Invalid value given: %s", args[1])
 				os.exit(1)
 			}
 
+			state.mode = .MENU
 			args = args[2:]
 
 		case:
@@ -136,18 +148,66 @@ main :: proc() {
 	case .CLI:
 
 	case .MENU:
-		//TEST:
-		// targ := Construct_ProcDesc_From_Menu_Runner(config.menu_runner)
-		// defer Menu_Runner_ProcDesc_Free(targ)
+		switch (state.menuMode) {
+		case .SUBMAPS:
+			pd := Construct_ProcDesc_From_Menu_Runner(config.submap_menu_runner)
+			defer Menu_Runner_ProcDesc_Free(pd)
 
-		state.selectedSubmap = Menu_Submap(&config, submap_types)
-		defer delete_string(state.selectedSubmap)
+			selectedSubmap := Menu_Submap(&config, submap_types)
+			defer delete_string(selectedSubmap)
+			fmt.println(selectedSubmap)
 
-		state.selectedKeybind = Menu_Keybind(&config, binds, state.selectedSubmap)
-		defer delete_string(state.selectedKeybind)
+		//TODO: Add a 'stat' functionality here
 
-		fmt.println(state.selectedKeybind)
+		case .BINDS:
+			pd := Construct_ProcDesc_From_Menu_Runner(config.submap_menu_runner)
+			defer Menu_Runner_ProcDesc_Free(pd)
 
+			selectedSubmap := Menu_Submap(&config, submap_types)
+			defer delete_string(selectedSubmap)
+
+			if len(selectedSubmap) == 0 {
+				fmt.eprintln("[Error] Submap selection required")
+				os.exit(1)
+			}
+
+			selectedKeybind := Menu_Keybind(&config, binds, selectedSubmap)
+			defer delete_string(selectedKeybind)
+
+			if len(selectedSubmap) == 0 {
+				os.exit(0)
+			}
+
+			fmt.printf(selectedKeybind)
+
+		case .ALL_BINDS:
+			pd := Construct_ProcDesc_From_Menu_Runner(config.allkey_menu_runner)
+			defer Menu_Runner_ProcDesc_Free(pd)
+
+			selectedKeybind := Menu_AllKey(&config, binds)
+			defer delete_string(selectedKeybind)
+
+			if len(selectedKeybind) == 0 {
+				os.exit(0)
+			}
+
+			fmt.printf(selectedKeybind)
+
+		}
+
+	//TEST:
+
+	// targ := Construct_ProcDesc_From_Menu_Runner(config.menu_runner)
+	// defer Menu_Runner_ProcDesc_Free(targ)
+	// state.selectedSubmap = Menu_Submap(&config, submap_types)
+	// defer delete_string(state.selectedSubmap)
+	//
+	// state.selectedKeybind = Menu_Keybind(&config, binds, state.selectedSubmap)
+	// defer delete_string(state.selectedKeybind)
+
+	// fmt.println(state.selectedKeybind)
+
+	//
 	// Wofi Menu - Submap
 
 	// state.selectedSubmap = Wofi_Menu_Submap(submap_types)
