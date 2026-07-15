@@ -33,10 +33,11 @@ Bind_Free :: proc(bl: [dynamic]Bind_Json) {
 }
 
 Bind_Get_Map_Binds :: proc(bl: [dynamic]Bind_Json, smap: string) -> [dynamic]Bind_Json {
+	s := smap == "default" ? "" : smap
 	result := make([dynamic]Bind_Json)
 
 	for b in bl {
-		if b.submap == smap {
+		if b.submap == s {
 			append(&result, b)
 		}
 	}
