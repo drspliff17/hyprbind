@@ -7,6 +7,9 @@ isValidSubmap :: proc(submap_types: [dynamic]string, submap: string) -> bool {
 	return slice.contains(submap_types[:], submap)
 }
 
+//NOTE: Can probs refactor into one proc
+
+// Prints bind count for every submap
 Stat_All :: proc(binds: [dynamic]Bind_Json, submap_types: [dynamic]string) {
 	c: int
 	for s in submap_types {
@@ -23,6 +26,7 @@ Stat_All :: proc(binds: [dynamic]Bind_Json, submap_types: [dynamic]string) {
 	return
 }
 
+// Prints bind for specified submap
 Stat_Submap :: proc(binds: [dynamic]Bind_Json, submap_types: [dynamic]string, submap: string) {
 	for s in submap_types {
 		if s == submap {

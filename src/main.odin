@@ -7,6 +7,8 @@ import "core:os"
 import "core:slice"
 import "core:strings"
 
+//TODO: Make printHelp proc
+
 main :: proc() {
 
 	state := State {
@@ -113,11 +115,10 @@ main :: proc() {
 	args := os.args[1:]
 	for len(args) > 0 {
 		switch (args[0]) {
+
 		case "-s", "--stat", "stat":
 			// Stat All
 			if len(args) < 2 {
-				// fmt.eprintln("[Error] Expected value to stat")
-				// os.exit(1)
 				Stat_All(binds, submap_types)
 				os.exit(0)
 			}
@@ -140,6 +141,7 @@ main :: proc() {
 				fmt.eprintln("[Error] Expected value to set Mode")
 				os.exit(1)
 			}
+
 			switch (args[1]) {
 			case "-s", "--submap", "submap":
 				state.menuMode = .SUBMAPS
