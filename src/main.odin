@@ -7,7 +7,22 @@ import "core:os"
 import "core:slice"
 import "core:strings"
 
-//TODO: Make printHelp proc
+
+printHelp :: proc() {
+	str := `
+            Hyprbind
+---------------------------------
+-s | stat [submap name]
+-m | menu [mode]
+
+Modes:
+-s | submap
+-sk| subkey
+-k | key
+`
+	fmt.print(str)
+	os.exit(0)
+}
 
 main :: proc() {
 
@@ -113,8 +128,13 @@ main :: proc() {
 
 	// Parse Args
 	args := os.args[1:]
+
+	if len(args) == 0 do printHelp()
 	for len(args) > 0 {
 		switch (args[0]) {
+
+		case "-h", "--help", "help":
+			printHelp()
 
 		case "-s", "--stat", "stat":
 			// Stat All
@@ -136,7 +156,7 @@ main :: proc() {
 				os.exit(0)
 			}
 
-		case "-m", "--mode", "mode":
+		case "-m", "--menu", "menu":
 			if len(args) < 2 {
 				fmt.eprintln("[Error] Expected value to set Mode")
 				os.exit(1)
