@@ -11,7 +11,7 @@ In the meanwhile:
 Usage: hyprbind [-s] [-m <mode> ]
 
 -s -> View list of submaps && their respective bind count
--m -> Create runner menu. Mode can be either 'subkey' or 'key'
+-m -> Create runner menu. Mode can be 'submap', 'subkey' or 'key'
       ('subkey' creates a menu of all submaps, then keys for
       selected map. 'key' uses all binds for menu)
 ```
