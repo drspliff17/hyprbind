@@ -18,9 +18,7 @@ CFile :: struct(T: typeid) {
 
 // Returns true if new (values = c.default) is created, bool is false
 Create_Config :: proc(c: ^CFile($T)) -> bool {
-	if os.exists(c.filepath) {
-		return false
-	}
+	if os.exists(c.filepath) do return false
 
 	config_dir := os.dir(c.filepath)
 	if !os.exists(config_dir) {
@@ -31,28 +29,20 @@ Create_Config :: proc(c: ^CFile($T)) -> bool {
 	json_text, err := json.marshal(c.default, allocator = context.allocator)
 	defer delete(json_text)
 
-	if err != nil {
-		panic("Failed to marshal default config")
-	}
+	if err != nil do panic("Failed to marshal default config")
 
 	werr := os.write_entire_file(c.filepath, json_text)
-	if werr != nil {
-		panic("Failed to write default config")
-	}
+	if werr != nil do panic("Failed to write default config")
 
 	return true
 }
 
 Load_Config :: proc(c: ^CFile($T)) -> bool {
-	if c.target == nil {
-		panic("Target to unmarshal unset")
-	}
+	if c.target == nil do panic("Target to unmarshal unset")
 
 	data, err := os.read_entire_file(c.filepath, context.allocator)
 	defer delete(data)
-	if err != nil {
-		panic("Error when attempting to read config file")
-	}
+	if err != nil do panic("Error when attempting to read config file")
 
 	ok := json.unmarshal(data, c.target) == nil
 	// if ok {

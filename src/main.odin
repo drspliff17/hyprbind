@@ -212,10 +212,7 @@ main :: proc() {
 			for loop {
 				selectedSubmap := Menu_Submap(&config, submap_types)
 				defer delete_string(selectedSubmap)
-
-				if len(selectedSubmap) == 0 {
-					break
-				}
+				if len(selectedSubmap) == 0 do break
 
 				selectedKeybind := Menu_Keybind(&config, binds, selectedSubmap)
 				defer delete_string(selectedKeybind)

@@ -120,9 +120,7 @@ Menu_Keybind :: proc(
 	strings.builder_init(&builder)
 
 	for b, i in selected_submap_binds {
-		if i > 0 {
-			strings.write_string(&builder, "\n")
-		}
+		if i > 0 do strings.write_string(&builder, "\n")
 
 		modmaskString := Bind_Modmask_To_String(b.modmask)
 		defer delete_string(modmaskString)
